@@ -1,0 +1,112 @@
+/*!*********************************************************************************************************************************************************************************************************************!*\
+  !*** css ./.yarn/__virtual__/css-loader-virtual-a8ff36e80e/0/cache/css-loader-npm-6.7.1-b93a2de0d4-170fdbc630.zip/node_modules/css-loader/dist/cjs.js??ruleSet[1].rules[1].oneOf[1].use[1]!./assets/styles/app.css ***!
+  \*********************************************************************************************************************************************************************************************************************/
+
+  /* Cart Render Layout */
+.cart-render-table {
+  /* display: inline-block; */
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0;
+  /* scale: .92; */
+}
+
+.cart-render-table table {
+  margin: 1px 0 1px 0;
+  border-spacing: 2px;
+  border-collapse: separate;
+  overflow: hidden;
+}
+
+.cart-render-inner-table table {
+  margin: 10px;
+  border-spacing: 2px;
+  border-collapse: separate;
+}
+
+.cart-render-inner-table table > tr, td {
+  margin: 13px;
+}
+
+.cart-render-cell {
+  padding: 0;
+  background-color: #c0c0c0;
+  contain: content;
+  vertical-align: top;
+}
+
+.cart-title {
+  text-align: center;
+  padding: 0;
+  font-size: 3rem;
+}
+
+.cart-render-spacer {
+  background-color: #000;
+  height: 5px;
+  padding: 0;
+}
+
+.cart-render-cell a {
+  padding: 3px;
+  display: block;
+  width: 100%;
+  height: 100%;
+  text-decoration: none;
+  text-align: center;
+  color: #000;
+  font-size: .9rem;
+  cursor: pointer;
+  /* font-weight:600; */
+}
+
+.cart-render-cell a:hover {
+  color: #ff0000;
+  background-color: #000;
+  cursor: pointer;
+}
+
+.cart-selection-menu {
+  text-align: center;
+}
+
+.cart-selection-menu a {
+  font-size: 1.2rem;
+  transition: text-shadow .3s;
+  text-decoration: none;
+  color: #000;
+}
+
+.cart-selection-menu a:hover, a:active {
+  text-shadow: 0 0 .7px #ff0000, 0 0 .7px #ff0000;
+  color: #ff0000;
+}
+
+.cart-slot[data-slot-assettag]:not([data-slot-assettag=""]) {
+  color: #ff0000;
+  background-color: #000000;
+}
+
+.cart-slot[data-is-finished="1"] {
+  color: #ff0000 !important;
+  background-color: green !important;
+}
+
+.cart-slot[data-needs-repair="1"] {
+  color: #000000 !important;
+  background-color: #fff !important;
+}
+
+/** My Modal Slot Title **/
+.my-modal-slot-title-highlight {
+  color: #ff0000 !important;
+  font-weight: bold !important;
+  /* unicode-range: U+0030-0039; */
+}
+
+.data-table {
+  max-height: 75vh;
+  width: 100%;
+  overflow: auto;
+  display: inline-block;
+}

@@ -1,0 +1,134 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello CartController!{% endblock %}
+
+{% block body %}
+    {# CART_SELECTION_MENU #}
+    {% if cart_links is defined %}
+        {% if cart_links is not empty %}
+            <div class="cart-selection-menu mt-3 mb-5">
+                {% for cart in cart_links %}
+                    {% if not loop.last %}
+                        <a class="cart-select-menu-link" href="{{ path('app_cart_add', {number: cart}) }}">Cart {{ cart }}</a> |
+                    {% else %}
+                        <a class="cart-select-menu-link" href="{{ path('app_cart_add', {number: cart}) }}">Cart {{ cart }}</a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endif %}
+    {# END_CART_SELECTION_MENU #}
+    {# Render the cart selected #}
+    {% if cart_render is defined %}
+        <div class="container-fluid">
+            <div class="row">
+                <div class="d-flex p-2">
+                    <table class="cart-render-table">
+                        <tr>
+                        {% for side in cart_render %}
+                            <td>
+                                <table class="cart-render-inner-table">
+                                    {% for row in side %}
+                                        <tr class="cart-render-row">
+                                            {% for slot in row %}
+                                                <td class="cart-render-cell">
+                                                    {% for key, val in slot|sort %}
+                                                        {{ key }}
+                                                    {% endfor %}
+                                                </td>
+                                            {% endfor %}
+                                        </tr>
+                                    {% endfor %}
+                                </table>
+                            </td>
+                        {% endfor %}
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            <div class="row">
+                <div class="container text-end">
+                    <div class="dropdown">
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="actionsDropDownButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        Actions
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="actionsDropDownButton">
+                            <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#slotModal">Add Slot</a></li>
+                            <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#cartModal">Add Cart</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+
+    {# Render the form & errors #}
+    {% if insert_errors is defined %}
+        {% if insert_errors is not empty %}
+            {% for error in insert_errors %}
+                <li>{{ error }}</li>
+            {% endfor %}
+        {% endif %}
+    {% endif %}
+    {% if slotForm is defined %}
+        {# EDIT_SLOT_MODAL #}
+        <div class="modal fade" id="slotModal" data-bs-backdrop="static" tabindex="-1" data-bs-keyboard="false" aria-labelledby="Slot Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Add Slot(s) to Cart {{ cart_number }}</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    {{ form_start(slotForm) }}
+                        <div class="modal-body">
+                            <div class="form-row mb-3">
+                                {{ form_row(slotForm.side) }}
+                            </div>
+                            <div class="form-row mb-3">
+                                {{ form_row(slotForm.row) }}
+                            </div>
+                            <div class="form-row mb-3">
+                                {{ form_row(slotForm.slot) }}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            {{ form_row(slotForm._token) }}
+                            {{ form_row(slotForm.close) }}
+                            {{ form_row(slotForm.save) }}
+                        </div>
+                    {{ form_end(slotForm, {render_rest: false}) }}
+                </div>
+            </div>
+        </div>
+        {# END_EDIT_SLOT_MODAL #}
+    {% endif %}
+    {% if cartForm is defined %}
+        {# EDIT_SLOT_MODAL #}
+        <div class="modal fade" id="cartModal" data-bs-backdrop="static" tabindex="-1" data-bs-keyboard="false" aria-labelledby="Cart Modal" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Add Cart</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    {{ form_start(cartForm) }}
+                        <div class="modal-body">
+                            <div class="form-row mb-3">
+                                {{ form_row(cartForm.number) }}
+                            </div>
+                            <div class="form-row mb-3">
+                                {{ form_row(cartForm.description) }}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            {{ form_row(cartForm._token) }}
+                            {{ form_row(cartForm.close) }}
+                            {{ form_row(cartForm.save) }}
+                        </div>
+                    {{ form_end(cartForm, {render_rest: false}) }}
+                </div>
+            </div>
+        </div>
+        {# END_EDIT_SLOT_MODAL #}
+    {% endif %}
+{% endblock %}

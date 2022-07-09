@@ -1,0 +1,44 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DistributionController!{% endblock %}
+
+{% block child_javascripts %}
+    <script src="/build/distribution.js" type="text/javascript"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" integrity="sha384-rOA1PnstxnOBLzCLMcre8ybwbTmemjzdNlILg8O7z1lUkLXozs4DHonlDtnE7fpc" crossorigin="anonymous"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="mb-2 input-group" id="filterTableInputWrapper">
+            <input class="form-control" id="filterTableInput" type="text" placeholder="Filter..." />
+            <button type="button" class="btn bg-transparent" style="margin-left: -40px; z-index: 100;" id="clearFilter">
+                <i class="fa fa-times"></i>
+            </button>
+        </div>
+    </div>
+    <div id="distribution" class="container">
+        <table class="table table-sm table-hover table-striped distribution-table">
+            <thead>
+                <tr>
+                    <th scope="col" style="width: 10%">Action</th>
+                    <th scope="col">Slot Number</th>
+                    <th scope="col">Person Assigned</th>
+                    <th scope="col">Asset Tag</th>
+                </tr>
+            </thead>
+            <tbody id="filterableTable">
+                {% for key, form in forms %}
+                    {{ form_start(form) }}
+                        <tr>
+                            <td>{{ form_widget(form.distribute) }}</td>
+                            <td>{{ form_label(form.slot_number_text) }}{{ form_widget(form.slot_number) }}</td>
+                            <td>{{ form_label(form.person_text) }}{{ form_widget(form.person) }}</td>
+                            <td>{{ form_label(form.asset_tag_text) }}{{ form_widget(form.asset_tag) }}</td>
+                            {{ form_row(form._token) }}
+                        </tr>
+                    {{ form_end(form, {render_rest: false}) }}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

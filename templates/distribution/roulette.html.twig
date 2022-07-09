@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Hello DistributionController!{% endblock %}
+
+{% block child_javascripts %}
+    <script src="/build/distribution.js" type="text/javascript"></script>
+{% endblock %}
+
+{% block body %}
+    <div class="container-fluid">
+        <div id="roulette" class="roulette align-center">
+            {% for asset in roulette|sort((a,b) => a.createdAt <=> b.createdAt) %}
+                {% if loop.first %}
+                    <span class="roulette roulette-first">
+                        <a href="{{ path('app_distribute_distribute', {id: asset.id}) }}">{{ asset.slotNumber }}</a><br />
+                        <span class="roulette-assettag">
+                            {{ asset.assetTag }}
+                        </span>
+                    </span>
+                {% else %}
+                    <span class="roulette">
+                    <a href="{{ path('app_distribute_distribute', {id: asset.id}) }}">{{ asset.slotNumber }}</a><br />
+                        <span class="roulette-assettag">
+                            {{ asset.assetTag }}
+                        </span>
+                    </span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+    {% if distributed is defined %}
+        <div id="roulette-ticker" class="fixed-bottom">
+            {% for assetticker in distributed %}
+                {{ assetticker.slotNumber }} - {{ assetticker.assetTag }} @ {{ assetticker.distributedAt|date('m/d h:i') }} by {{ assetticker.distributedBy }}<br />
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
