@@ -27,6 +27,9 @@ class Asset
     #[ORM\ManyToMany(targetEntity: Repair::class, mappedBy: 'assetid', fetch: 'EXTRA_LAZY')]
     private $repairs;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $notes;
+
     public function __construct()
     {
         $this->repairs = new ArrayCollection();
@@ -96,6 +99,18 @@ class Asset
         if ($this->repairs->removeElement($repair)) {
             $repair->removeAssetid($this);
         }
+
+        return $this;
+    }
+
+    public function getNotes(): ?string
+    {
+        return $this->notes;
+    }
+
+    public function setNotes(?string $notes): self
+    {
+        $this->notes = $notes;
 
         return $this;
     }

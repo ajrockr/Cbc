@@ -448,6 +448,7 @@ class CartController extends AbstractController
             ]);
         }
 
+        // dd($as);
         // Form has not been submitted yet, render the template
         // I am using one template here for both /show/all and /show/# in an attempt to not have to reuse code
         return $this->render('cart/showone.cart.html.twig', [

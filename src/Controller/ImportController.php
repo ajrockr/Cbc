@@ -333,44 +333,32 @@ class ImportController extends AbstractController
             ini_set('max_execution_time', 0);
 
             try {
-                // $progressBarMaxLength = count($csv);
-                // $progressBarCurrentStep = 0;
-
                 foreach ($csv as $row) {
-                    // $progressBarCurrentStep += 1;
-                    // $progressBarPercent = intval($progressBarCurrentStep/$progressBarMaxLength * 100) . '%';
-                    // if ($request->request->get('progressBarCurrentAjax')) {
-                    //     $arrData = ['progressBarCurrentValue' => $progressBarPercent];
-                    //     return new JsonResponse($arrData);
-                    // }
+                    // Get the Asset entity
+                    $assetEntity = $entityManager->getRepository('App\Entity\Asset')
+                        ->findOneBy(['asset_tag' => $row['asset_tag']]);
 
-                    $assetEntity = new Asset;
+                    // Get the Slot entity
                     $slotEntity = new Slot;
-                    $personEntity = new Person;
 
-                    $assetTagId = $assetRepository->findOneBy([ 'asset_tag' => $row['asset_tag']]);
-                    $slotId = $cartslotRepository->findOneBy([ 'cart_slot_number' => $row['slot_number'] ]);
+                    // Get the CartSlot entity based on the csv row
+                    $cartslotEntity = $cartslotRepository->findOneBy([ 'cart_slot_number' => $row['slot_number'] ]);
+
+                    // Get the Person entity based on last_name, first_name
                     $name = explode(', ', $row['assigned_person']);
-                    $personId = $personRepository->findOneBy([ 'first_name' => $name[1], 'last_name' => $name[0] ]);
+                    $personEntity = $personRepository->findOneBy([ 'first_name' => $name[1], 'last_name' => $name[0] ]);
+
+                    // Set the desired information
                     $finished = ($row['finished'] == 1) ? true : false;
                     $repair = ($row['repair'] == 1) ? true : false;
 
-                    // $data[] = [
-                    //     'assignedAsset' => $assetTagId,
-                    //     'assignedPerson' => $personId,
-                    //     'finished' => $finished,
-                    //     'repair' => $repair,
-                    //     'slot' => $slotId
-                    // ];
-
-                    // debug
-
                     try {
-                        $slotEntity->setNumber($slotId);
-                        $slotEntity->setAssignedAssetId($assetTagId);
-                        $slotEntity->setAssignedPersonId($personId);
+                        $slotEntity->setNumber($cartslotEntity);
+                        $slotEntity->setAssignedAssetId($assetEntity);
+                        $slotEntity->setAssignedPersonId($personEntity);
                         $slotEntity->setIsFinished($finished);
-                        $assetTagId->setNeedsRepair($repair);
+                        $assetEntity->setNeedsRepair($repair);
+                        $assetEntity->setNotes($row['notes']);
                         $entityManager->persist($slotEntity);
                         $entityManager->flush();
                     } catch(UniqueConstraintViolationException $e) {
@@ -378,33 +366,10 @@ class ImportController extends AbstractController
                         dump($e->getMessage());
                         dump($e->getQuery());
                     }
-
-                    // if (null !== $result = $assetRepository->findOneBy([
-                    //     'asset_tag' => $row['asset_tag'],
-                    // ])) {
-                    //     $result
-                    //         ->setAssetTag($row['asset_tag'])
-                    //         ->setNeedsRepair(false)
-                    //     ;
-                    // } else {
-                    //     $assetEntity
-                    //         ->setAssetTag($row['asset_tag'])
-                    //         ->setNeedsRepair(false)
-                    //     ;
-                    //     $entityManager->persist($assetEntity);
-                    // }
-                    // $entityManager->flush();
                 }
             } catch (\Exception $e) {
                 throw new \Exception($e->getMessage());
             }
-
-            // foreach ($data as $row) {
-            //     if ($row['slot'] == null) {
-            //         dump($row);
-            //     }
-            // }
-            // die;
 
             // Log the import made for future reference
             // $importEntity

@@ -64,7 +64,7 @@ class SlotRepository extends ServiceEntityRepository
     {
         if (null === $cartNumber) {
             return $this->createQueryBuilder('s')
-                ->select('a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 's.IsFinished')
+                ->select('a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 's.IsFinished', 'a.notes')
                 ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
                 ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
                 ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
@@ -73,13 +73,13 @@ class SlotRepository extends ServiceEntityRepository
         }
 
         return $this->createQueryBuilder('s')
-            ->select('a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 's.IsFinished')
-            ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
-            ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
-            ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
-            ->where('cs.cart_number = :cartnumber')
-            ->setParameter('cartnumber', $cartNumber)
-            ->getQuery()
-            ->getResult();
+                ->select('a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 's.IsFinished', 'a.notes')
+                ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
+                ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
+                ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
+                ->where('cs.cart_number = :cartnumber')
+                ->setParameter('cartnumber', $cartNumber)
+                ->getQuery()
+                ->getResult();
     }
 }

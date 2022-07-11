@@ -43,19 +43,21 @@
                                         {% set personId = '' %}
                                         {% set isFinished = 0 %}
                                         {% set isNeedsRepair = 0 %}
+                                        {% set notes = '' %}
                                         <td class="cart-render-cell">
                                             {% for key, val in slot|sort %}
                                                 {# Set the slot information from the database #}
                                                 {%  for askey, asval in assigned_slots %}
-                                                    {% if askey == val %}
+                                                    {% if asval.cart_slot_number == key %}
                                                         {% set assetTag = asval.asset_tag %}
                                                         {% set assetId = asval.assetid %}
                                                         {% set personId = asval.personid %}
                                                         {% set isFinished = asval.IsFinished %}
                                                         {% set isNeedsRepair = asval.NeedsRepair %}
+                                                        {% set notes = asval.notes %}
                                                     {% endif %}
                                                 {% endfor %}
-                                                <a class="openSlotNumber cart-slot" data-bs-placement="top" title="{{ key }}" data-bs-toggle="modal" data-bs-target="#slotModal" data-needs-repair="{{ isNeedsRepair }}" data-is-finished="{{ isFinished }}" data-slot-number="{{ key }}" data-slot-id="{{ val }}" data-slot-assettag="{{ assetTag }}" data-slot-assetid="{{ assetId }}" data-slot-assignedpersonid="{{ personId }}">{{ key|slice(1,4) }}</a>
+                                                <a class="openSlotNumber cart-slot" data-bs-placement="top" title="{{ key }}" data-bs-toggle="modal" data-bs-target="#slotModal" data-notes = "{{ notes }}" data-needs-repair="{{ isNeedsRepair }}" data-is-finished="{{ isFinished }}" data-slot-number="{{ key }}" data-slot-id="{{ val }}" data-slot-assettag="{{ assetTag }}" data-slot-assetid="{{ assetId }}" data-slot-assignedpersonid="{{ personId }}">{{ key|slice(1,4) }}</a>
                                             {% endfor %}
                                         </td>
                                     {% endfor %}
