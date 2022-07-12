@@ -70,6 +70,7 @@ class SlotRepository extends ServiceEntityRepository
                 ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
                 ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
                 ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
+                // ->leftJoin('App\Entity\Repair', 'r', 'WITH', 'a.id = r.assetid')
                 ->addOrderBy('cs.cart_number', 'ASC')
                 ->addOrderBy('cs.cart_side', 'ASC')
                 ->addOrderBy('cs.cart_row', 'ASC')
@@ -112,7 +113,7 @@ class SlotRepository extends ServiceEntityRepository
                 ->getResult();
         }
 
-        
+        // dd($results);
 
         foreach ($qb as $slot) {
             // $dataSlots[$slot['cart_number']][$slot['cart_side']][$slot['cart_row']] = [];

@@ -15,13 +15,13 @@ class Repair
     #[ORM\Column(type: 'integer')]
     private $id;
 
-    #[ORM\ManyToMany(targetEntity: Asset::class, inversedBy: 'repairs')]
+    #[ORM\Column(type: 'integer')]
     private $assetid;
 
-    #[ORM\ManyToMany(targetEntity: Person::class)]
+    #[ORM\Column(type: 'integer')]
     private $personid;
 
-    #[ORM\ManyToMany(targetEntity: User::class)]
+    #[ORM\Column(type: 'integer')]
     private $technicianid;
 
     #[ORM\Column(type: 'datetime_immutable')]
@@ -30,7 +30,7 @@ class Repair
     #[ORM\Column(type: 'datetime_immutable')]
     private $modifiedAt;
 
-    #[ORM\ManyToMany(targetEntity: Slot::class)]
+    #[ORM\Column(type: 'integer')]
     private $cartSlotId;
 
     #[ORM\Column(type: 'boolean')]
@@ -45,87 +45,43 @@ class Repair
     #[ORM\Column(type: 'array', nullable: true)]
     private $items = [];
 
-    public function __construct()
-    {
-        $this->assetid = new ArrayCollection();
-        $this->personid = new ArrayCollection();
-        $this->technicianid = new ArrayCollection();
-        $this->cartSlotId = new ArrayCollection();
-    }
-
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    /**
-     * @return Collection<int, Asset>
-     */
-    public function getAssetid(): Collection
+    public function getAssetid(): ?int
     {
         return $this->assetid;
     }
 
-    public function addAssetid(Asset $assetid): self
+    public function setAssetid(int $assetid): self
     {
-        if (!$this->assetid->contains($assetid)) {
-            $this->assetid[] = $assetid;
-        }
+        $this->assetid = $assetid;
 
         return $this;
     }
 
-    public function removeAssetid(Asset $assetid): self
-    {
-        $this->assetid->removeElement($assetid);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Person>
-     */
-    public function getPersonid(): Collection
+    public function getPersonid(): ?int
     {
         return $this->personid;
     }
 
-    public function addPersonid(Person $personid): self
+    public function setPersonid(int $personid): self
     {
-        if (!$this->personid->contains($personid)) {
-            $this->personid[] = $personid;
-        }
+        $this->personid = $personid;
 
         return $this;
     }
 
-    public function removePersonid(Person $personid): self
-    {
-        $this->personid->removeElement($personid);
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, User>
-     */
-    public function getTechnicianid(): Collection
+    public function getTechnicianid(): ?int
     {
         return $this->technicianid;
     }
 
-    public function addTechnicianid(User $technicianid): self
+    public function setTechnicianid(int $technicianid): self
     {
-        if (!$this->technicianid->contains($technicianid)) {
-            $this->technicianid[] = $technicianid;
-        }
-
-        return $this;
-    }
-
-    public function removeTechnicianid(User $technicianid): self
-    {
-        $this->technicianid->removeElement($technicianid);
+        $this->technicianid = $technicianid;
 
         return $this;
     }
@@ -157,23 +113,14 @@ class Repair
     /**
      * @return Collection<int, Slot>
      */
-    public function getCartSlotId(): Collection
+    public function getCartSlotId(): ?int
     {
         return $this->cartSlotId;
     }
 
-    public function addCartSlotId(Slot $cartSlotId): self
+    public function setCartSlotId(int $cartSlotId): self
     {
-        if (!$this->cartSlotId->contains($cartSlotId)) {
-            $this->cartSlotId[] = $cartSlotId;
-        }
-
-        return $this;
-    }
-
-    public function removeCartSlotId(Slot $cartSlotId): self
-    {
-        $this->cartSlotId->removeElement($cartSlotId);
+        $this->cartSlotId = $cartSlotId;
 
         return $this;
     }

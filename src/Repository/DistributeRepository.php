@@ -55,6 +55,8 @@ class DistributeRepository extends ServiceEntityRepository
         }
 
         $data = [];
+        // @todo fix this
+        dd($assetEntity);
         foreach ($assetEntity as $asset) {
             if (!in_array($asset->getAssignedAssetId()->getAssetTag(), $dist)) {
                 $data[] = [

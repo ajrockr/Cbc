@@ -24,16 +24,8 @@ class Asset
     #[ORM\Column(type: 'boolean')]
     private $NeedsRepair;
 
-    #[ORM\ManyToMany(targetEntity: Repair::class, mappedBy: 'assetid', fetch: 'EXTRA_LAZY')]
-    private $repairs;
-
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private $notes;
-
-    public function __construct()
-    {
-        $this->repairs = new ArrayCollection();
-    }
 
     public function getId(): ?int
     {
@@ -72,33 +64,6 @@ class Asset
     public function setNeedsRepair(bool $NeedsRepair): self
     {
         $this->NeedsRepair = $NeedsRepair;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Repair>
-     */
-    public function getRepairs(): Collection
-    {
-        return $this->repairs;
-    }
-
-    public function addRepair(Repair $repair): self
-    {
-        if (!$this->repairs->contains($repair)) {
-            $this->repairs[] = $repair;
-            $repair->addAssetid($this);
-        }
-
-        return $this;
-    }
-
-    public function removeRepair(Repair $repair): self
-    {
-        if ($this->repairs->removeElement($repair)) {
-            $repair->removeAssetid($this);
-        }
 
         return $this;
     }
