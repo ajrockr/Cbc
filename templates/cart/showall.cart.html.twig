@@ -21,8 +21,7 @@
     {% set isFinished = 0 %}
     {% set isNeedsRepair = 0 %}
     {% set notes = '' %}
-
-    {{ dump(cart_render) }}
+    
     {# INPUT_ERRORS #}
     {% if insert_errors is defined %}
         {% if insert_errors is not empty %}
@@ -34,50 +33,46 @@
         {% endif %}
     {% endif %}
     {# END_INPUT_ERRORS #}
-    {# ROUTE_SHOW_ONE #}
-    {% if cart_render is defined %}
-        {% if cart_number is defined %}
-            <div class="cart-title">
-                {{ cart_number }}
-            </div>
-        {% endif %}
+    {# ROUTE_SHOW_ALL #}
+    {% if cartData is defined %}
         <div id="cbcontainer">
+        {% for cart in cartData %}
             <table class="cart-render-table">
-                    <tr>
-                    {% for side in cart_render %}
-                        <td>
-                            <table class="cart-render-inner-table">
-                                {% for row in side %}
-                                    <tr class="cart-render-row">
-                                        {% for slot in row %}
-                                            <td class="cart-render-cell">
-                                                {# Set the slot information from the database #}
-                                                {% set assetTag = slot.assetTag|default('') %}
-                                                {% set assetId = slot.assetId|default('') %}
-                                                {% set personId = slot.personId|default('') %}
-                                                {% set isFinished = slot.isFinished|default(0) %}
-                                                {% set isNeedsRepair = slot.needsRepair|default(0) %}
-                                                {% set notes = slot.notes|default('') %}
-                                                {% set slotNumber = slot.slotNumber|default(0) %}
-                                                {% set slotId = slot.slotId|default(0) %}
-                                                <a class="openSlotNumber cart-slot" data-bs-placement="top" title="{{ slotNumber }}" data-bs-toggle="modal" data-bs-target="#slotModal" data-notes = "{{ notes }}" data-needs-repair="{{ isNeedsRepair }}" data-is-finished="{{ isFinished }}" data-slot-number="{{ slotNumber }}" data-slot-id="{{ slotId }}" data-slot-assettag="{{ assetTag }}" data-slot-assetid="{{ assetId }}" data-slot-assignedpersonid="{{ personId }}">{{ slotNumber|slice(1,4) }}</a>
-                                            </td>
-                                        {% endfor %}
+                <tr>
+                {% for side in cart %}
+                    <td>
+                        <table class="cart-render-inner-table">
+                            {% for row in side %}
+                                <tr class="cart-render-row">
+                                    {% for slot in row %}
+                                        <td class="cart-render-cell">
+                                            {# Set the slot information from the database #}
+                                            {% set assetTag = slot.assetTag|default('') %}
+                                            {% set assetId = slot.assetId|default('') %}
+                                            {% set personId = slot.personId|default('') %}
+                                            {% set isFinished = slot.isFinished|default(0) %}
+                                            {% set isNeedsRepair = slot.needsRepair|default(0) %}
+                                            {% set notes = slot.notes|default('') %}
+                                            <a class="openSlotNumber cart-slot" data-bs-placement="top" title="{{ slot.slotNumber }}" data-bs-toggle="modal" data-bs-target="#slotModal" data-notes = "{{ notes }}" data-needs-repair="{{ isNeedsRepair }}" data-is-finished="{{ isFinished }}" data-slot-number="{{ slot.slotNumber }}" data-slot-id="{{ slot.slotId }}" data-slot-assettag="{{ assetTag }}" data-slot-assetid="{{ assetId }}" data-slot-assignedpersonid="{{ personId }}">{{ slot.slotNumber|slice(1,4) }}</a>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                                {% if not loop.last %}
+                                    <tr>
+                                        <td class="cart-render-spacer" colspan="100%"></td>
                                     </tr>
-                                    {% if not loop.last %}
-                                        <tr>
-                                            <td class="cart-render-spacer" colspan="100%"></td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
-                            </table>
-                        </td>
-                    {% endfor %}
-                    </tr>
-                </table>
-            </div>
+                                {% endif %}
+                            {% endfor %}
+                        </table>
+                    </td>
+                {% endfor %}
+                </tr>
+            </table><br />
+        {% endfor %}
+        </div>
     {% endif %}
-    {# END_ROUTE_SHOW_ONE #}
+    {# END_ROUTE_SHOW_ALL #}
+    
     {# EDIT_SLOT_MODAL #}
     <div class="modal fade" id="slotModal" data-bs-backdrop="static" tabindex="-1" data-bs-keyboard="false" aria-labelledby="Slot Modal" aria-hidden="true">
         <div class="modal-dialog">

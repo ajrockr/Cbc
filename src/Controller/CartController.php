@@ -13,9 +13,11 @@ use App\Repository\AssetRepository;
 use App\Repository\PersonRepository;
 use App\Repository\CartSlotRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\Regex;
 use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -31,50 +33,13 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 class CartController extends AbstractController
 {
-    #[Route('/cart', name: 'app_cart')]
-    public function index(): Response
+    // @todo Might make $attributes into something else later
+    private function createSlotEditForm(mixed $attributes): FormInterface
     {
-        return $this->render('cart/index.html.twig', [
-            'controller_name' => 'CartController',
-        ]);
-    }
-
-    #[Route('/cart/show/all', name: 'app_cart_show_all')]
-    public function showAll(Request $request, CartRepository $cartRepository, CartSlotRepository $CartSlotRepository, SlotRepository $SlotRepository, PersonRepository $PersonRepository, AssetRepository $AssetRepository, ManagerRegistry $doctrine): Response
-    {
-        // Set an empty variable of inputErrors for template rendering
-        $insertErrors = '';
-
-        // Generate a list of items from the People table
-        $people = $PersonRepository->findAll();
-        foreach ($people as $p) {
-            $dd[($p->getLastName() . ', ' . $p->getFirstName() . ' (' . $p->getGraduationYear() . ')')] = $p->getId();
-        }
-
-        // dd($cartRepository->getCartNumbers());
-        // // Generate the carts to loop through for slots
-        // $results = $cartRepository->getCartNumbers();
-
-        // foreach ($cartRepository->getCartNumbers() as $result) {
-        //     $c[] = $result['cart_number'];
-        // }
-
-        // // Make sure we are only getting 1 entity representing each cart
-        // $carts = array_unique($c);
-        
-        // Loop through the carts to get the slots for that cart
-        foreach ($cartRepository->getCartNumbers() as $cart) {
-            $data[$cart['cart_number']] = $CartSlotRepository->getCartSlots($cart['cart_number']);
-        }
-
-        // Get the assigned slots
-        $as = $SlotRepository->findSlots();
-
-        // Create the form that will be used to edit a slot
-        $form = $this->createFormBuilder()
+        return $this->createFormBuilder()
             ->add('inputPersonName', ChoiceType::class, [
                 'label' => 'Person',
-                'choices' => $dd,
+                'choices' => $attributes,
                 'attr' => [
                     'class' => 'form-control',
                     'id' => 'inputPersonName',
@@ -147,6 +112,30 @@ class CartController extends AbstractController
             ->add('slot_id', HiddenType::class)
             ->getForm()
         ;
+    }
+
+    #[Route('/cart/show/all', name: 'app_cart_show_all')]
+    public function showAll(Request $request, CartRepository $cartRepository, CartSlotRepository $CartSlotRepository, SlotRepository $SlotRepository, PersonRepository $PersonRepository, AssetRepository $AssetRepository, ManagerRegistry $doctrine): Response
+    {
+        // Set an empty variable of inputErrors for template rendering
+        $insertErrors = '';
+
+        // Generate a list of items from the People table
+        $people = $PersonRepository->findAll();
+        foreach ($people as $p) {
+            $personList[($p->getLastName() . ', ' . $p->getFirstName() . ' (' . $p->getGraduationYear() . ')')] = $p->getId();
+        }
+
+        // Loop through the carts to get the slots for that cart
+        foreach ($cartRepository->getCartNumbers() as $cart) {
+            $data[$cart['cart_number']] = $CartSlotRepository->getCartSlots($cart['cart_number']);
+        }
+
+        // Get the assigned slots
+        $slotData = $SlotRepository->findSlots();
+
+        // Create the form that will be used to edit a slot
+        $form = $this->createSlotEditForm($personList);
 
         // Handle form submission
         $form->handleRequest($request);
@@ -234,9 +223,8 @@ class CartController extends AbstractController
         
                 // We render the template here, had a hard time redirecting with passing the inputErrors variable
                 return $this->render('cart/show.cart.html.twig', [
-                    'carts' => $data,
+                    'cartData' => $slotData,
                     'editForm' => $form->createView(),
-                    'assigned_slots' => $as,
                     'insert_errors' => $insertErrors
                 ]);
             }
@@ -246,10 +234,15 @@ class CartController extends AbstractController
 
         // Form has not been submitted yet, render the template
         // I am using one template here for both /show/all and /show/# in an attempt to not have to reuse code
+        // return $this->render('cart/show.cart.html.twig', [
+        //     'carts' => $data,
+        //     'editForm' => $form->createView(),
+        //     'assigned_slots' => $as,
+        //     'insert_errors' => $insertErrors
+        // ]);
         return $this->render('cart/show.cart.html.twig', [
-            'carts' => $data,
+            'cartData' => $slotData,
             'editForm' => $form->createView(),
-            'assigned_slots' => $as,
             'insert_errors' => $insertErrors
         ]);
     }
@@ -263,92 +256,21 @@ class CartController extends AbstractController
         // Generate a list of items from the People table
         $people = $PersonRepository->findAll();
         foreach ($people as $p) {
-            $dd[($p->getLastName() . ', ' . $p->getFirstName() . ' (' . $p->getGraduationYear() . ')')] = $p->getId();
+            $personList[($p->getLastName() . ', ' . $p->getFirstName() . ' (' . $p->getGraduationYear() . ')')] = $p->getId();
         }
         
-        // Loop through the carts to get the slots for that cart
-        $data = $CartSlotRepository->getCartSlots($CartNumber);
+        // // Loop through the carts to get the slots for that cart
+        // $data = $CartSlotRepository->getCartSlots($CartNumber);
+
+        // // Get the assigned slots
+        // $as = $SlotRepository->findSlots($CartNumber);
 
         // Get the assigned slots
-        $as = $SlotRepository->findSlots($CartNumber);
+        $slotData = $SlotRepository->findSlots($CartNumber);
+
 
         // Create the form that will be used to edit a slot
-        $form = $this->createFormBuilder()
-            ->add('inputPersonName', ChoiceType::class, [
-                'label' => 'Person',
-                'choices' => $dd,
-                'attr' => [
-                    'class' => 'form-control',
-                    'id' => 'inputPersonName',
-                    'data-placeholder' => 'Select a person...'
-                ]
-            ])
-            ->add('inputAssetTag', TextType::class, [
-                'label' => ' ',
-                'attr' => [
-                    'placeholder' => 'Asset Tag',
-                    'id' => 'inputAssetTag',
-                    'step' => 1,
-                    'class' => 'form-control'
-                ]
-            ])
-            ->add('inputNumberGenerator', ButtonType::class, [
-                'label' => 'Generate',
-                'attr' => [
-                    'class' => 'btn btn-outline-secondary',
-                ]
-            ])
-            ->add('inputAssetNotes', TextareaType::class, [
-                'label' => 'Notes',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'id' => 'inputAssetNotes'
-                ]
-            ])
-            ->add('needsRepair', CheckboxType::class, [
-                'label' => 'Needs Repair',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-check-input'
-                ]
-            ])
-            ->add('slotFinished', CheckboxType::class, [
-                'label' => 'Finished',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-check-input'
-                ]
-            ])
-            // @todo Create clear slot functionality
-            ->add('clear', SubmitType::class, [
-                'label' => 'Clear',
-                'attr' => [
-                    'class' => 'btn btn-danger'
-                ]
-            ])
-            ->add('repair', ButtonType::class, [
-                'label' => 'Repair',
-                'attr' => [
-                    'class' => 'btn btn-secondary'
-                ]
-            ])
-            ->add('close', ButtonType::class, [
-                'label' => 'Close',
-                'attr' => [
-                    'class' => 'btn btn-secondary',
-                    'data-bs-dismiss' => 'modal',
-                ]
-            ])
-            ->add('save', SubmitType::class, [
-                'label' => 'Save',
-                'attr' => [
-                    'class' => 'btn btn-primary'
-                ]
-            ])
-            ->add('slot_id', HiddenType::class)
-            ->getForm()
-        ;
+        $form = $this->createSlotEditForm($personList);
 
         // Handle form submission
         $form->handleRequest($request);
@@ -435,10 +357,10 @@ class CartController extends AbstractController
                 $insertErrors = 'Asset or person already assigned to a slot.';
         
                 // We render the template here, had a hard time redirecting with passing the inputErrors variable
-                return $this->render('cart/showone.cart.html.twig', [
-                    'cart_render' => $data,
+                return $this->render('cart/show.cart.html.twig', [
+                    'cart_number' => $CartNumber,
+                    'cartData' => $slotData,
                     'editForm' => $form->createView(),
-                    'assigned_slots' => $as,
                     'insert_errors' => $insertErrors
                 ]);
             }
@@ -451,11 +373,10 @@ class CartController extends AbstractController
         // dd($as);
         // Form has not been submitted yet, render the template
         // I am using one template here for both /show/all and /show/# in an attempt to not have to reuse code
-        return $this->render('cart/showone.cart.html.twig', [
+        return $this->render('cart/show.cart.html.twig', [
             'cart_number' => $CartNumber,
-            'cart_render' => $data,
+            'cartData' => $slotData,
             'editForm' => $form->createView(),
-            'assigned_slots' => $as,
             'insert_errors' => $insertErrors
         ]);
     }
