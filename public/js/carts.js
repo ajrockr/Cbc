@@ -1,4 +1,5 @@
 $(document).on('click', '.openSlotNumber', function(){
+  uncheckAll('form_inputRepairItems');
   var slotNumber = $(this).data('slot-number');
   var slotId = $(this).data('slot-id');
   var slotAssetTag = $(this).data('slot-assettag');
@@ -7,6 +8,10 @@ $(document).on('click', '.openSlotNumber', function(){
   var isFinished = $(this).data('is-finished');
   var isNeedsRepair = $(this).data('needs-repair');
   var notes = $(this).data('notes');
+  var repairItems = $(this).data('repair-items').split(", ");
+  $.each( repairItems, function (item) {
+    $('#form_inputRepairItems_' + item).prop('checked', true);
+  });
 
   // Change HTML elements on page
   $('#form_inputPersonName').attr('selected', slotAssignedPerson);
@@ -47,6 +52,16 @@ $(document).on('click', '.openSlotNumber', function(){
     }).val(slotAssignedPerson).trigger("change");
   }
 });
+
+function uncheckAll(divid) {
+    var checks = document.querySelectorAll('#' + divid + ' input[type="checkbox"]');
+    for(var i =0; i< checks.length;i++){
+        var check = checks[i];
+        if(!check.disabled){
+            check.checked = false;
+        }
+    }
+}
 
 // Generate random number
 // https://stackoverflow.com/posts/39774334/revisions

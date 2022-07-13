@@ -66,10 +66,11 @@ class SlotRepository extends ServiceEntityRepository
 
         if (null === $cartNumber) {
             $results =  $this->createQueryBuilder('s')
-                ->select('a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 'cs.cart_number', 'cs.cart_row', 'cs.cart_side', 's.IsFinished', 'a.notes')
+                ->select('r.items', 'a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 'cs.cart_number', 'cs.cart_row', 'cs.cart_side', 's.IsFinished', 'a.notes')
                 ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
                 ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
                 ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
+                ->leftJoin('App\Entity\Repair', 'r', 'WITH', 'a.asset_tag = r.assetid')
                 // ->leftJoin('App\Entity\Repair', 'r', 'WITH', 'a.id = r.assetid')
                 ->addOrderBy('cs.cart_number', 'ASC')
                 ->addOrderBy('cs.cart_side', 'ASC')
@@ -88,10 +89,11 @@ class SlotRepository extends ServiceEntityRepository
                 ->getResult();
         } else {
             $results =  $this->createQueryBuilder('s')
-                ->select('a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 'cs.cart_number', 'cs.cart_row', 'cs.cart_side', 's.IsFinished', 'a.notes')
+                ->select('r.items', 'a.id as assetid', 'a.asset_tag', 'a.NeedsRepair', 'p.first_name', 'p.id as personid', 'p.last_name', 'p.graduation_year', 'p.email', 'cs.id as slotid', 'cs.cart_slot_number', 'cs.cart_number', 'cs.cart_row', 'cs.cart_side', 's.IsFinished', 'a.notes')
                 ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
                 ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
                 ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
+                ->leftJoin('App\Entity\Repair', 'r', 'WITH', 'a.asset_tag = r.assetid')
                 ->addOrderBy('cs.cart_number', 'ASC')
                 ->addOrderBy('cs.cart_side', 'ASC')
                 ->addOrderBy('cs.cart_row', 'ASC')
@@ -136,11 +138,11 @@ class SlotRepository extends ServiceEntityRepository
                 'isFinished' => $result['IsFinished'],
                 'notes' => $result['notes'],
                 'slotId' => $result['slotid'],
-                'slotNumber' => $result['cart_slot_number']
+                'slotNumber' => $result['cart_slot_number'],
+                'repairItems' => (null === $result['items']) ? null : implode(', ', $result['items'])
             ];
         }
 
-        // dd($dataSlots);
         return $dataSlots;
     }
 }

@@ -21,6 +21,7 @@
     {% set isFinished = 0 %}
     {% set isNeedsRepair = 0 %}
     {% set notes = '' %}
+    {% set repairItems = '' %}
     
     {# INPUT_ERRORS #}
     {% if insert_errors is defined %}
@@ -34,6 +35,7 @@
     {% endif %}
     {# END_INPUT_ERRORS #}
     {# ROUTE_SHOW_ALL #}
+    {# {{ dump(cartData.3000)}} #}
     {% if cartData is defined %}
         {% if cart_number is defined %}
             <div class="cart-title">
@@ -62,7 +64,8 @@
                                             {% set isFinished = slot.isFinished|default(0) %}
                                             {% set isNeedsRepair = slot.needsRepair|default(0) %}
                                             {% set notes = slot.notes|default('') %}
-                                            <a class="openSlotNumber cart-slot" data-bs-placement="top" title="{{ slot.slotNumber }}" data-bs-toggle="modal" data-bs-target="#slotModal" data-notes = "{{ notes }}" data-needs-repair="{{ isNeedsRepair }}" data-is-finished="{{ isFinished }}" data-slot-number="{{ slot.slotNumber }}" data-slot-id="{{ slot.slotId }}" data-slot-assettag="{{ assetTag }}" data-slot-assetid="{{ assetId }}" data-slot-assignedpersonid="{{ personId }}">{{ slot.slotNumber|slice(1,4) }}</a>
+                                            {% set repairItems = slot.repairItems|default('') %}
+                                            <a class="openSlotNumber cart-slot" data-bs-placement="top" title="{{ slot.slotNumber }}" data-bs-toggle="modal" data-bs-target="#slotModal" data-repair-items="{{ repairItems }}" data-notes="{{ notes }}" data-needs-repair="{{ isNeedsRepair }}" data-is-finished="{{ isFinished }}" data-slot-number="{{ slot.slotNumber }}" data-slot-id="{{ slot.slotId }}" data-slot-assettag="{{ assetTag }}" data-slot-assetid="{{ assetId }}" data-slot-assignedpersonid="{{ personId }}">{{ slot.slotNumber|slice(1,4) }}</a>
                                         </td>
                                     {% endfor %}
                                 </tr>
