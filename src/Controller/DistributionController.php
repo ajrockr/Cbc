@@ -6,10 +6,10 @@ use App\Entity\Slot;
 use App\Entity\CartSlot;
 use App\Entity\Distribute;
 use Monolog\DateTimeImmutable;
-use App\Repository\SlotRepository;
 use App\Repository\ConfigRepository;
 use App\Repository\DistributeRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -23,7 +23,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class DistributionController extends AbstractController
 {
     #[Route('/distribute', name: 'app_distribution')]
-    public function distribution(Request $request, DistributeRepository $distributeRepository, FormFactoryInterface $formFactory, ManagerRegistry $doctrine): Response
+    public function distribution(PaginatorInterface $paginator, Request $request, DistributeRepository $distributeRepository, FormFactoryInterface $formFactory, ManagerRegistry $doctrine): Response
     {
         // Get assets that can be distributed
         $toDistribute = $distributeRepository->getAssetsNotDistributed();
@@ -44,22 +44,22 @@ class DistributionController extends AbstractController
                     'data' => $data['asset_tag']
                 ])
                 ->add('person_text', TextType::class, [
-                    'label' => $data['person'],
+                    'label' => $data['last_name'] . ', ' . $data['first_name'],
                     'attr' => [
-                        'value' => $data['person']
+                        'value' => $data['last_name'] . ', ' . $data['first_name']
                     ]
                 ])
                 ->add('person', HiddenType::class, [
-                    'data' => $data['person']
+                    'data' => $data['last_name'] . ', ' . $data['first_name']
                 ])
                 ->add('slot_number_text', TextType::class, [
-                    'label' => $data['slot_number'],
+                    'label' => $data['cart_slot_number'],
                     'attr' => [
-                        'value' => $data['slot_number']
+                        'value' => $data['cart_slot_number']
                     ]
                 ])
                 ->add('slot_number', HiddenType::class, [
-                    'data' => $data['slot_number']
+                    'data' => $data['cart_slot_number']
                 ])
                 ->add('distribute', SubmitType::class, [
                     'label' => 'Distribute',
@@ -71,37 +71,41 @@ class DistributionController extends AbstractController
         }
 
         // To handle the requests, we will loop through the forms in order to deterine which one was submitted
-        foreach ($forms as $form) {
-            $form->handleRequest($request);
-            if ($form->isSubmitted() && $form->isValid()) {
-                $input = $form->getData();
+        if ($request->isMethod('POST')) {
+            foreach ($forms as $form) {
+                $form->handleRequest($request);
+                if ($form->isSubmitted() && $form->isValid()) {
+                    $input = $form->getData();
 
-                $entityManger = $doctrine->getManager();
-                $distributeEntity = $entityManger->getRepository(Distribute::class)
-                                                ->findOneBy([
-                                                    'assetTag' => $input['asset_tag'],
-                                                ])
-                ;
+                    $entityManger = $doctrine->getManager();
+                    $distributeEntity = $entityManger->getRepository(Distribute::class)
+                                                    ->findOneBy([
+                                                        'assetTag' => $input['asset_tag'],
+                                                    ])
+                    ;
 
-                if (null === $distributeEntity) {
-                    $distributeEntity = new Distribute();
-                    $distributeEntity->setAssetTag($input['asset_tag']);
-                    $distributeEntity->setSlotNumber($input['slot_number']);
-                    $distributeEntity->setDistributed(false);
-                    $distributeEntity->setCreatedAt(new \DateTimeImmutable("now"));
-                    $distributeEntity->setDistributedBy($this->getUser()->getUserIdentifier());
-                    $entityManger->persist($distributeEntity);
+                    if (null === $distributeEntity) {
+                        $distributeEntity = new Distribute();
+                        $distributeEntity->setAssetTag($input['asset_tag'])
+                            ->setSlotNumber($input['slot_number'])
+                            ->setDistributed(false)
+                            ->setCreatedAt(new \DateTimeImmutable("now"))
+                            ->setDistributedBy($this->getUser()->getUserIdentifier())
+                            ->setAssignedPerson($input['person']);
+                        $entityManger->persist($distributeEntity);
+                        $entityManger->flush();
+                    }
+
+                    $distributeEntity->setAssetTag($input['asset_tag'])
+                        ->setSlotNumber($input['slot_number'])
+                        ->setDistributed(false)
+                        ->setCreatedAt(new \DateTimeImmutable("now"))
+                        ->setAssignedPerson($input['person'])
+                        ->setDistributedBy($this->getUser()->getUserIdentifier());
                     $entityManger->flush();
+
+                    return $this->redirectToRoute('app_distribution');
                 }
-
-                $distributeEntity->setAssetTag($input['asset_tag']);
-                $distributeEntity->setSlotNumber($input['slot_number']);
-                $distributeEntity->setDistributed(false);
-                $distributeEntity->setCreatedAt(new \DateTimeImmutable("now"));
-                $distributeEntity->setDistributedBy($this->getUser()->getUserIdentifier());
-                $entityManger->flush();
-
-                return $this->redirectToRoute('app_distribution');
             }
         }
 

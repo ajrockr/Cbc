@@ -3,8 +3,9 @@
 namespace App\Repository;
 
 use App\Entity\Distribute;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\Common\Collections\Criteria;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Distribute>
@@ -41,33 +42,24 @@ class DistributeRepository extends ServiceEntityRepository
 
     public function getAssetsNotDistributed(): array
     {
-        $assetEntity = $this->getEntityManager()
-                            ->getRepository('App\Entity\Slot')
-                            ->findAll();
+        $expr = $this->getEntityManager()->getExpressionBuilder();
 
-        $distributed = $this->findAll();
+        $qb = $this->createQueryBuilder('di')
+            ->select('di.assetTag')
+            ->getDQL();
 
-        $dist = [];
-        foreach ($distributed as $d) {
-            $dist[] = 
-                $d->getAssetTag()
-            ;
-        }
+        $assetEntity = $this->getEntityManager()->getRepository('App\Entity\Slot')->createQueryBuilder('s')
+            ->select('p.id', 'p.last_name', 'p.first_name', 'a.asset_tag', 'cs.cart_slot_number')
+            ->leftJoin('App\Entity\Person', 'p', 'WITH', 's.assignedPersonId = p.id')
+            ->leftJoin('App\Entity\Asset', 'a', 'WITH', 's.assignedAssetId = a.id')
+            ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 's.number = cs.id')
+            ->leftJoin('App\Entity\Distribute', 'd', 'WITH', 'a.asset_tag = d.assetTag')
+            ->where($expr->notIn('a.asset_tag', $qb))
+            // ->where('a.asset_tag = d.assetTag')
+            ->getQuery()
+            ->getResult();
 
-        $data = [];
-        // @todo fix this
-        dd($assetEntity);
-        foreach ($assetEntity as $asset) {
-            if (!in_array($asset->getAssignedAssetId()->getAssetTag(), $dist)) {
-                $data[] = [
-                    'asset_tag' => $asset->getAssignedAssetId()->getAssetTag(),
-                    'person' => $asset->getAssignedPersonId()->getLastName() . ', ' . $asset->getAssignedPersonId()->getFirstName(),
-                    'slot_number' => $asset->getNumber()->getCartSlotNumber()
-                ];
-            }
-        }
-
-        return $data;
+        return $assetEntity;
     }
 
     public function getAssetsForRoulette(): array

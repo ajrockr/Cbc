@@ -14,14 +14,16 @@
                     <span class="roulette roulette-first">
                         <a href="{{ path('app_distribute_distribute', {id: asset.id}) }}">{{ asset.slotNumber }}</a><br />
                         <span class="roulette-assettag">
-                            {{ asset.assetTag }}
+                            {{ asset.assetTag }}<br />
+                            {{ asset.assignedPerson }}
                         </span>
                     </span>
                 {% else %}
                     <span class="roulette">
                     <a href="{{ path('app_distribute_distribute', {id: asset.id}) }}">{{ asset.slotNumber }}</a><br />
                         <span class="roulette-assettag">
-                            {{ asset.assetTag }}
+                            {{ asset.assetTag }}<br />
+                            {{ asset.assignedPerson }}
                         </span>
                     </span>
                 {% endif %}
@@ -31,7 +33,7 @@
     {% if distributed is defined %}
         <div id="roulette-ticker" class="fixed-bottom">
             {% for assetticker in distributed %}
-                {{ assetticker.slotNumber }} - {{ assetticker.assetTag }} @ {{ assetticker.distributedAt|date('m/d h:i') }} by {{ assetticker.distributedBy }}<br />
+                {{ assetticker.slotNumber }} - {{ assetticker.assignedPerson }} ({{ assetticker.assetTag }}) @ {{ assetticker.distributedAt|date('m/d h:i') }} by {{ assetticker.distributedBy }}<br />
             {% endfor %}
         </div>
     {% endif %}

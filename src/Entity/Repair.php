@@ -30,7 +30,7 @@ class Repair
     #[ORM\Column(type: 'datetime_immutable')]
     private $modifiedAt;
 
-    #[ORM\Column(type: 'integer')]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private $cartSlotId;
 
     #[ORM\Column(type: 'boolean')]

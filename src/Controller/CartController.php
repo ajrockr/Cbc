@@ -85,9 +85,6 @@ class CartController extends AbstractController
                 'choice_label' => function (RepairItem $item) {
                     return $item->getName();
                 },
-                // 'choice_value' => function (RepairItem $item) {
-                //     return $item->getId();
-                // },
                 'choice_attr' => function (RepairItem $ri, $key, $value) {
                     return [
                         'class' => 'form-check-input m-1',
@@ -111,10 +108,10 @@ class CartController extends AbstractController
                     'class' => 'btn btn-danger'
                 ]
             ])
-            ->add('repair', ButtonType::class, [
+            ->add('repair', SubmitType::class, [
                 'label' => 'Repair',
                 'attr' => [
-                    'class' => 'btn btn-secondary'
+                    'class' => 'btn btn-secondary disabled'
                 ]
             ])
             ->add('close', ButtonType::class, [
@@ -175,7 +172,7 @@ class CartController extends AbstractController
 
             // If the repair button was clicked
             if ($form->getClickedButton() && 'repair' === $form->getClickedButton()->getName()) {
-
+                $this->redirectToRoute('app_repair_add', ['test' => 'test data']);
             }
 
             // Get the Person entity

@@ -1,7 +1,5 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello DistributionController!{% endblock %}
-
 {% block child_assets %}
     <script src="/js/distribution.js" type="text/javascript"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.15.4/js/all.js" integrity="sha384-rOA1PnstxnOBLzCLMcre8ybwbTmemjzdNlILg8O7z1lUkLXozs4DHonlDtnE7fpc" crossorigin="anonymous"></script>
@@ -17,7 +15,7 @@
         </div>
     </div>
     <div id="distribution" class="container">
-        <table class="table table-sm table-hover table-striped distribution-table">
+        <table class="table table-sm table-hover table-striped distribution-table paginated">
             <thead>
                 <tr>
                     <th scope="col" style="width: 10%">Action</th>

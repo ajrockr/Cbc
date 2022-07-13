@@ -3,7 +3,7 @@
 {% block title %}Hello RepairController!{% endblock %}
 
 {% block child_javascripts %}
-    <script src="/build/people.js" type="text/javascript"></script>
+    <script src="/js/people.js" type="text/javascript"></script>
 {% endblock %}
 
 {% block body %}
@@ -51,16 +51,16 @@
                     </tr>
                 </thead>
                 <tbody id="filterableTable">
-                    {% for repair in repairList %}
+                    {% for key, repair in repairList %}
                         <tr>
-                            <th scope="row">{{ repair.id}}</th>
-                            <td>{{ repair.assetAssetTag }}</td>
-                            <td>{{ repair.assetSlotNumber }}</td>
+                            <th scope="row">{{ loop.index0 }}</th>
+                            <td>{{ repair.assetTag }}</td>
+                            <td>{{ repair.slot }}</td>
                             <td>{{ repair.assignedPerson }}</td>
                             <td>{{ repair.createdAt|date('Y-m-d h:i') }}</td>
                             <td>{{ repair.modifiedAt|date('Y-m-d h:i') }}</td>
                             <td>{{ repair.technician }}</td>
-                            <td>parts</td>
+                            <td>{{ repair.items|join(', ') }}</td>
                             <td>Edit | Delete</td>
                         </tr>
                     {% endfor %}

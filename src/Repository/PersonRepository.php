@@ -94,15 +94,15 @@ class PersonRepository extends ServiceEntityRepository
      * @param string $searchTerm
      * @return void
      */
-    public function search(string $searchTerm)
-    {
-        return $this->createQueryBuilder('p')
-            ->orWhere('p.last_name LIKE :st')
-            ->orWhere('p.first_name LIKE :st')
-            ->orWhere('p.middle_name LIKE :st')
-            ->setParameter('st', $searchTerm)
-            ->getQuery()
-            ->getArrayResult()
-        ;
-    }
+    // public function search(string $searchTerm)
+    // {
+    //     return $this->createQueryBuilder('p')
+    //         ->orWhere('p.last_name LIKE :st')
+    //         ->orWhere('p.first_name LIKE :st')
+    //         ->orWhere('p.middle_name LIKE :st')
+    //         ->setParameter('st', $searchTerm)
+    //         ->getQuery()
+    //         ->getArrayResult()
+    //     ;
+    // }
 }

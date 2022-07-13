@@ -31,6 +31,9 @@ class Distribute
     #[ORM\Column(type: 'string', length: 255)]
     private $distributedBy;
 
+    #[ORM\Column(type: 'string', length: 255, nullable: true)]
+    private $assignedPerson;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -104,6 +107,18 @@ class Distribute
     public function setDistributedBy(string $distributedBy): self
     {
         $this->distributedBy = $distributedBy;
+
+        return $this;
+    }
+
+    public function getAssignedPerson(): ?string
+    {
+        return $this->assignedPerson;
+    }
+
+    public function setAssignedPerson(?string $assignedPerson): self
+    {
+        $this->assignedPerson = $assignedPerson;
 
         return $this;
     }

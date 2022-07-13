@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Repair;
-use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use App\Entity\RepairItem;
+use App\Repository\RepairItemRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 
 /**
  * @extends ServiceEntityRepository<Repair>
@@ -39,28 +41,53 @@ class RepairRepository extends ServiceEntityRepository
         }
     }
 
-//    /**
-//     * @return Repair[] Returns an array of Repair objects
-//     */
-//    public function findByExampleField($value): array
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->orderBy('r.id', 'ASC')
-//            ->setMaxResults(10)
-//            ->getQuery()
-//            ->getResult()
-//        ;
-//    }
+    public function getActiveRepairs()
+    {
+        $repairs = $this->createQueryBuilder('r')
+            ->select('r.id', 'r.assetid as assettag', 'a.id as assetid', 'p.first_name', 'p.last_name', 'u.email', 'r.createdAt', 'r.modifiedAt', 'cs.cart_slot_number', 'r.notes', 'r.items')
+            ->leftJoin('App\Entity\Asset', 'a', 'WITH', 'r.assetid = a.asset_tag')
+            ->leftJoin('App\Entity\Person', 'p', 'WITH', 'r.personid = p.id')
+            ->leftJoin('App\Entity\CartSlot', 'cs', 'WITH', 'r.cartSlotId = cs.id')
+            ->leftJoin('App\Entity\User', 'u', 'WITH', 'r.technicianid = u.id')
+            ->andWhere('r.active = 1')
+            ->getQuery()
+            ->getResult();
 
-//    public function findOneBySomeField($value): ?Repair
-//    {
-//        return $this->createQueryBuilder('r')
-//            ->andWhere('r.exampleField = :val')
-//            ->setParameter('val', $value)
-//            ->getQuery()
-//            ->getOneOrNullResult()
-//        ;
-//    }
+        $repairitemEntity = $this->getEntityManager()->getRepository('App\Entity\RepairItem');
+
+        $repairItems = $repairitemEntity->createQueryBuilder('ri')
+            ->select('ri.id', 'ri.name')
+            ->getQuery()
+            ->getResult();
+
+        foreach($repairItems as $item) {
+            $ri[$item['id']] = $item['name'];
+        }
+
+        foreach ($repairs as $repair) {
+            $data[$repair['id']] = [
+                'assetId' => $repair['assetid'],
+                'assetTag' => $repair['assettag'],
+                'assignedPerson' => $repair['last_name'] . ', ' . $repair['first_name'],
+                'technician' => strstr($repair['email'], '@', true),
+                'slot' => $repair['cart_slot_number'],
+                'notes' => $repair['notes'],
+                'createdAt' => $repair['createdAt'],
+                'modifiedAt' => $repair['modifiedAt'],
+                'items' => $this->combineArray($ri, array_flip(explode(', ', implode(', ', $repair['items'])))), 
+                // 'items' => array_flip(explode(', ', implode(', ', $repair['items'])))
+            ];
+        }
+
+        return $data;
+    }
+
+    // @todo function works, make look better
+    private function combineArray(array $arr1, array $arr2) {
+        foreach ($arr2 as $k => $v) {
+            $newArr[$k] = $arr1[$k];
+        }
+
+        return $newArr;
+    }
 }
