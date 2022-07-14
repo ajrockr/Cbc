@@ -14,6 +14,7 @@ use Symfony\Component\Security\Core\Security;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\Extension\Core\Type\ButtonType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
@@ -83,7 +84,7 @@ class UserProfileController extends AbstractController
         $availableThemes = array_combine($availableThemes, $availableThemes);
 
         // Create change theme form
-        $changeThemeForm = $this->createFormBuilder()
+        $changeThemeForm = $this->createFormBuilder(options: ['allow_extra_fields' => true])
             ->add('theme', ChoiceType::class, [
                 'attr' => [
                     'class' => 'form-select',
@@ -91,7 +92,7 @@ class UserProfileController extends AbstractController
                 'choices' => $availableThemes,
                 'data' => $security->getUser()->getTheme()
             ])
-            ->add('submit', SubmitType::class, [
+            ->add('submit'.mt_rand(), ButtonType::class, [
                 'label' => 'Change',
                 'attr' => [
                     'id' => 'changeTheme',

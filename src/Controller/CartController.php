@@ -264,11 +264,12 @@ class CartController extends AbstractController
                 // We have an error, assuming record already exists
                 // @todo Will probably have to do more testing for other possible errors and handle them accordingly
                 $insertErrors .= "Something Went Wrong.\r\n";
-                throw new Exception($e->getMessage());
+                // throw new Exception($e->getMessage());
         
                 // We render the template here, had a hard time redirecting with passing the inputErrors variable
                 return $this->render('cart/show.cart.html.twig', [
                     'cartData' => $slotData,
+                    'cartNavs' => $this->getCartList($cartRepository),
                     'editForm' => $form->createView(),
                     'insert_errors' => $insertErrors
                 ]);
@@ -280,16 +281,20 @@ class CartController extends AbstractController
         // Form has not been submitted yet, render the template
         return $this->render('cart/show.cart.html.twig', [
             'cartData' => $slotData,
+            'cartNavs' => $this->getCartList($cartRepository),
             'editForm' => $form->createView(),
             'insert_errors' => $insertErrors
         ]);
     }
 
     #[Route('/cart/show/{CartNumber<\d+>}', name: 'app_cart_show_number')]
-    public function showOne(Request $request, CartSlotRepository $CartSlotRepository, SlotRepository $SlotRepository, PersonRepository $PersonRepository, AssetRepository $AssetRepository, ManagerRegistry $doctrine, int $CartNumber): Response
+    public function showOne(Request $request, CartRepository $cartRepository, CartSlotRepository $CartSlotRepository, SlotRepository $SlotRepository, PersonRepository $PersonRepository, AssetRepository $AssetRepository, ManagerRegistry $doctrine, int $CartNumber): Response
     {
         // Set an empty variable of inputErrors for template rendering
         $insertErrors = '';
+
+        // Get the Doctrine Entity Manager
+        $em = $doctrine->getManager();
 
         // Generate a list of items from the People table
         $people = $PersonRepository->findAll();
@@ -301,7 +306,7 @@ class CartController extends AbstractController
         $slotData = $SlotRepository->findSlots($CartNumber);
 
         // Create the form that will be used to edit a slot
-        $form = $this->createSlotEditForm($personList);
+        $form = $this->createSlotEditForm($personList, $em);
 
         // Handle form submission
         $form->handleRequest($request);
@@ -319,9 +324,6 @@ class CartController extends AbstractController
             if ($form->getClickedButton() && 'repair' === $form->getClickedButton()->getName()) {
 
             }
-
-            // Get the Doctrine Entity Manager
-            $em = $doctrine->getManager();
 
             // Get the Person entity
             $personEntity = $em
@@ -391,6 +393,7 @@ class CartController extends AbstractController
                 return $this->render('cart/show.cart.html.twig', [
                     'cart_number' => $CartNumber,
                     'cartData' => $slotData,
+                    'cartNavs' => $this->getCartList($cartRepository),
                     'editForm' => $form->createView(),
                     'insert_errors' => $insertErrors
                 ]);
@@ -401,10 +404,11 @@ class CartController extends AbstractController
             ]);
         }
 
-        // dd($as);
+        
         // Form has not been submitted yet, render the template
         return $this->render('cart/show.cart.html.twig', [
             'cart_number' => $CartNumber,
+            'cartNavs' => $this->getCartList($cartRepository),
             'cartData' => $slotData,
             'editForm' => $form->createView(),
             'insert_errors' => $insertErrors
@@ -579,36 +583,18 @@ class CartController extends AbstractController
         return false;
     }
 
-    private function clearSlot(SlotRepository $slotRepository, int $slotId): void
+    private function getCartList(CartRepository $cartRepository): array
     {
-        // $em = $doctrine->getManager();
-        // if (null !== $slot = $em
-        //         ->getRepository('App\Entity\Slot')
-        //         ->findOneBy([
-        //             'number' => $slotId
-        //         ])) {
-        //     $em->remove($slot);
-        //     $em->flush();
+        $return = $cartRepository->createQueryBuilder('c')
+            ->select('c.cart_number, c.cart_description')
+            ->orderBy('c.cart_number', 'asc')
+            ->getQuery()
+            ->getResult();
+
+        // foreach ($results as $result) {
+        //     $return[$result['cart_number']] = $result['cart_description'];
         // }
-        // $slotRepository->clearSlot($slotId);
-    }
 
-    public function generateCartList(CartSlotRepository $CartSlotRepository, Session $session): Response
-    {
-        $results = $CartSlotRepository->findAll();
-        foreach ($results as $result) {
-            $c[] = $result->getCartNumber();
-        }
-
-        // Make sure we are only getting 1 entity representing each cart
-        $carts = array_unique($c);
-
-        $session->set('navitem_carts', $carts);
-
-        dd($carts);
-
-        return $this->render('cart/navmenu.html.twig', [
-            'carts' => $carts,
-        ]);
+        return $return;
     }
 }

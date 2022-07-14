@@ -6,6 +6,7 @@ use App\Entity\Slot;
 use App\Entity\CartSlot;
 use App\Entity\Distribute;
 use Monolog\DateTimeImmutable;
+use App\Service\DataTableService;
 use App\Repository\ConfigRepository;
 use App\Repository\DistributeRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -23,98 +25,61 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 class DistributionController extends AbstractController
 {
     #[Route('/distribute', name: 'app_distribution')]
-    public function distribution(PaginatorInterface $paginator, Request $request, DistributeRepository $distributeRepository, FormFactoryInterface $formFactory, ManagerRegistry $doctrine): Response
+    public function distribution(Request $request, DistributeRepository $distributeRepository, FormFactoryInterface $formFactory, ManagerRegistry $doctrine): Response
     {
         // Get assets that can be distributed
         $toDistribute = $distributeRepository->getAssetsNotDistributed();
 
-        // Bypass twig errors be creating an empty array that will be overwritten if there is data pressent
-        $forms = [];
+        if ($request->isMethod('POST') && (null !== $request->request->get('distribute'))) {
+            $data = explode(':', $request->request->get('distribute'));
+            $input['asset_tag'] = $data[0];
+            $input['person'] = $data[2];
+            $input['slot_number'] = $data[1];
 
-        // Create a dynamic array of forms for reach asset that can be distributed to a person
-        foreach ($toDistribute as $key => $data) {
-            $forms[$key] = $formFactory->createNamed('form_' . $key)
-                ->add('asset_tag_text', TextType::class, [
-                    'label' => $data['asset_tag'],
-                    'attr' => [
-                        'value' => $data['asset_tag']
-                    ]
-                ])
-                ->add('asset_tag', HiddenType::class, [
-                    'data' => $data['asset_tag']
-                ])
-                ->add('person_text', TextType::class, [
-                    'label' => $data['last_name'] . ', ' . $data['first_name'],
-                    'attr' => [
-                        'value' => $data['last_name'] . ', ' . $data['first_name']
-                    ]
-                ])
-                ->add('person', HiddenType::class, [
-                    'data' => $data['last_name'] . ', ' . $data['first_name']
-                ])
-                ->add('slot_number_text', TextType::class, [
-                    'label' => $data['cart_slot_number'],
-                    'attr' => [
-                        'value' => $data['cart_slot_number']
-                    ]
-                ])
-                ->add('slot_number', HiddenType::class, [
-                    'data' => $data['cart_slot_number']
-                ])
-                ->add('distribute', SubmitType::class, [
-                    'label' => 'Distribute',
-                    'attr' => [
-                        'class' => 'form-control'
-                    ]
-                ])
+            $entityManger = $doctrine->getManager();
+            $distributeEntity = $entityManger->getRepository(Distribute::class)
+                                            ->findOneBy([
+                                                'assetTag' => $input['asset_tag'],
+                                            ])
             ;
-        }
 
-        // To handle the requests, we will loop through the forms in order to deterine which one was submitted
-        if ($request->isMethod('POST')) {
-            foreach ($forms as $form) {
-                $form->handleRequest($request);
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $input = $form->getData();
-
-                    $entityManger = $doctrine->getManager();
-                    $distributeEntity = $entityManger->getRepository(Distribute::class)
-                                                    ->findOneBy([
-                                                        'assetTag' => $input['asset_tag'],
-                                                    ])
-                    ;
-
-                    if (null === $distributeEntity) {
-                        $distributeEntity = new Distribute();
-                        $distributeEntity->setAssetTag($input['asset_tag'])
-                            ->setSlotNumber($input['slot_number'])
-                            ->setDistributed(false)
-                            ->setCreatedAt(new \DateTimeImmutable("now"))
-                            ->setDistributedBy($this->getUser()->getUserIdentifier())
-                            ->setAssignedPerson($input['person']);
-                        $entityManger->persist($distributeEntity);
-                        $entityManger->flush();
-                    }
-
-                    $distributeEntity->setAssetTag($input['asset_tag'])
-                        ->setSlotNumber($input['slot_number'])
-                        ->setDistributed(false)
-                        ->setCreatedAt(new \DateTimeImmutable("now"))
-                        ->setAssignedPerson($input['person'])
-                        ->setDistributedBy($this->getUser()->getUserIdentifier());
-                    $entityManger->flush();
-
-                    return $this->redirectToRoute('app_distribution');
-                }
+            if (null === $distributeEntity) {
+                $distributeEntity = new Distribute();
+                $distributeEntity->setAssetTag($input['asset_tag'])
+                    ->setSlotNumber($input['slot_number'])
+                    ->setDistributed(false)
+                    ->setCreatedAt(new \DateTimeImmutable("now"))
+                    ->setDistributedBy($this->getUser()->getUserIdentifier())
+                    ->setAssignedPerson($input['person']);
+                $entityManger->persist($distributeEntity);
+                $entityManger->flush();
             }
+
+            $distributeEntity->setAssetTag($input['asset_tag'])
+                ->setSlotNumber($input['slot_number'])
+                ->setDistributed(false)
+                ->setCreatedAt(new \DateTimeImmutable("now"))
+                ->setAssignedPerson($input['person'])
+                ->setDistributedBy($this->getUser()->getUserIdentifier());
+            $entityManger->flush();
+
+            return $this->redirectToRoute('app_distribution');
         }
 
         return $this->render('distribution/distribute.html.twig', [
             'toDistribute' => $toDistribute,
-            'forms' => array_map(function($form) {
-                return $form->createView();
-            }, $forms),
         ]);
+    }
+
+    #[Route('/distribute/ajax', name: 'app_distribute_ajax', methods: ['GET', 'POST'])]
+    public function table(DataTableService $service, Request $request, DistributeRepository $distributeRepository) {
+ 
+        $response = $service->getData($request, $distributeRepository);
+ 
+        $returnResponse = new JsonResponse();
+        $returnResponse->setJson($response);
+         
+        return $returnResponse;       
     }
 
     #[Route('/roulette', name: 'app_roulette')]
@@ -143,12 +108,18 @@ class DistributionController extends AbstractController
 
         // If $CONFIG['UNASSIGN_SLOT_ON_DISTRIBUTION'] remove asset from slot
         if (true == $config->item('unassign_slot_on_distribution')) {
-            $slotEntity = $doctrine->getRepository(Slot::class);
-            $cartslotEntity = $doctrine->getRepository(CartSlot::class);
             $slotId = $cartslotEntity->findOneBy(['cart_slot_number' => $distributeEntity->getSlotNumber()])->getId();
-            $slot = $slotEntity->findOneBy(['number' => $slotId]);
-            $entityManger->remove($slot);
-            $entityManger->flush();
+            $slotEntity = $doctrine->getRepository(Slot::class)
+                ->createQueryBuilder('s')
+                ->delete()
+                ->where('id = :slotid')
+                ->setParameter('slotid', $slotId)
+                ->getQuery()
+                ->execute();
+            // $cartslotEntity = $doctrine->getRepository(CartSlot::class);
+            // $slot = $slotEntity->findOneBy(['number' => $slotId]);
+            // // $entityManger->remove($slot);
+            // $entityManger->flush();
         }
 
         return $this->redirectToRoute('app_roulette');

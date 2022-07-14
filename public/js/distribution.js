@@ -1,14 +1,11 @@
-$(document).ready(function(){
-    $("#filterTableInput").on("keyup", function() {
-        var value = $(this).val().toLowerCase();
-        $("#filterableTable tr").filter(function() {
-            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-        });
+$(window).on("load", function () {
+  $('#paginatedTable').DataTable({
+    order: [[2, 'asc']],
+    stateSave: true,
+    scrollY: '50vh',
+    scrollCollapse: true,
+    paging: false,
   });
-});
-
-$('#clearFilter').on( "click", function(event) {
-    $('#filterTableInput').attr('value', "");
 });
 
 var timeout = setInterval(reloadCarts, 3000);
@@ -18,6 +15,3 @@ function reloadCarts() {
     $('#roulette').load(window.location.href + " #roulette");
     $('#roulette-ticker').load(window.location.href + " #roulette-ticker");
 }
-$(document).ready( function() {
-    $('#paginatedTable').DataTable();
-});
