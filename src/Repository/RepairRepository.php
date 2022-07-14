@@ -41,6 +41,16 @@ class RepairRepository extends ServiceEntityRepository
         }
     }
 
+    public function getUserRepairs(int $userId, int $limit = 5) {
+        return $this->createQueryBuilder('r')
+            ->select('r.id', 'r.assetid', 'r.createdAt')
+            ->where('r.technicianid = :userid')
+            ->setParameter('userid', $userId)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
     public function getActiveRepairs()
     {
         $repairs = $this->createQueryBuilder('r')

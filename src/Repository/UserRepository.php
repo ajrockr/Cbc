@@ -55,4 +55,17 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
 
         $this->add($user, true);
     }
+
+    public function setTheme(User $user, string $theme) {
+        if (!$user instanceof User) {
+            throw new UnsupportedUserException(sprintf('Instances of "%s" are not supported.', \get_class($user)));
+        }
+
+        $this->createQueryBuilder('u')
+            ->update()
+            ->set('u.theme', ':theme')
+            ->setParameter('theme', $theme)
+            ->getQuery()
+            ->execute();
+    }
 }

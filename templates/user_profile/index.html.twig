@@ -1,20 +1,151 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Hello UserProfileController!{% endblock %}
-
 {% block body %}
-<style>
-    .example-wrapper { margin: 1em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; }
-    .example-wrapper code { background: #F5F5F5; padding: 2px 6px; }
-</style>
-
-<div class="example-wrapper">
-    <h1>Hello {{ controller_name }}! ✅</h1>
-
-    This friendly message is coming from:
-    <ul>
-        <li>Your controller at <code><a href="{{ 'C:/Users/arizzo/Documents/cbc/src/Controller/UserProfileController.php'|file_link(0) }}">src/Controller/UserProfileController.php</a></code></li>
-        <li>Your template at <code><a href="{{ 'C:/Users/arizzo/Documents/cbc/templates/user_profile/index.html.twig'|file_link(0) }}">templates/user_profile/index.html.twig</a></code></li>
-    </ul>
+<div class="container">
+    {% if inputSuccess is defined and inputSuccess is not empty %}
+        <div id="inputSuccess" class="alert alert-success alert-dismissible fade show">{{ inputSuccess }}</div>
+    {% endif %}
+    <selection style="background-color: #eee;">
+        <div class="row">
+            <div class="col-lg-4">
+                <div class="card mb-4">
+                    <div class="card-body text-center">
+                        <img id="userAvatar" src="{{ avatar_directory }}{{ app.user.avatar }}" alt="avatar" class="rounded-circle img-fluid border" style="width: 250px; height: 250px;" />
+                        <h5 class="my-3">{{ app.user.email }}</h5>
+                    </div>
+                </div>
+                <div class="card mb-5 mb-lg-0">
+                    <div class="card-body p-0">
+                        <ul class="list-group list-group-flush rounded-3">
+                            <li class="list-group-item d-flex justify-content-between align-items-center p-3"><h5 class="card-title">User Roles</h5></li>
+                            {% for role in app.user.roles %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center p-3">
+                                    <p class="mb-0">{{ role }}</p>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="row my-1">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Email</p>
+                            </div>
+                            <div class="col-sm-7">
+                                <p class="text-muted mb-0">{{ app.user.email }}</p>
+                            </div>
+                            <div class="col-sm-2">
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Theme</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0">{{ app.user.theme }}</p>
+                            </div>
+                            <div class="col-sm-3 text-end">
+                                <a data-bs-toggle="collapse" data-bs-target="#changeThemeForm" href="#changeThemeForm" role="button" class="btn btn-primary btn-sm">Change Theme</a>
+                            </div>
+                        </div>
+                        <div class="row collapse accordian w-100 my-3" id="changeThemeForm">
+                            <div class="accordian-item w-100">
+                                {{ form_start(changeThemeForm, { 'attr': {'id': 'changeThemeForm'} }) }}
+                                    {{ form_widget(changeThemeForm.theme) }}
+                                    {# {{ form_errors(changeThemeForm, { attr: { 'class': 'text-danger' } }) }} #}
+                                    {{ form_row(changeThemeForm.submit, { 'attr': {'id': 'changeTheme'} }) }}
+                                    {{ form_row(changeThemeForm._token) }}
+                                {{ form_end(changeThemeForm, { render_rest: false }) }}
+                                {% if inputErrors is defined and inputErrors is not empty %}
+                                    <p id="inputError" class="text-danger my-2">{{ inputErrors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row my-1">
+                            <div class="col-sm-3">
+                                <p class="mb-0">Password</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <p class="text-muted mb-0">*************</p>
+                            </div>
+                            <div class="col-sm-3 text-end">
+                                <a data-bs-toggle="collapse" data-bs-target="#changePasswordForm" href="#changePasswordForm" role="button" class="btn btn-primary btn-sm">Change Password</a>
+                            </div>
+                        </div>
+                        <div class="row collapse accordian w-100 mt-3" id="changePasswordForm">
+                            <div class="accordian-item w-100">
+                                {{ form_start(changePasswordForm) }}
+                                    {{ form_row(changePasswordForm.oldPassword) }}
+                                    {{ form_row(changePasswordForm.newPassword) }}
+                                    <div class="invalid-feedback">
+                                        Password must be atleast 8 characters, containan uppercase and lowercase letter, and at least one number.
+                                    </div>
+                                    {{ form_errors(changePasswordForm, { 'attr': { 'class': 'text-danger' } }) }}
+                                    {{ form_errors(changePasswordForm.newPassword, { 'attr': { 'class': 'text-danger' } }) }}
+                                    {{ form_row(changePasswordForm.submit, { 'attr': {'id': 'changePassword'} }) }}
+                                    {{ form_row(changePasswordForm._token) }}
+                                {{ form_end(changePasswordForm, { render_rest: false }) }}
+                                {% if inputPasswordErrors is defined and inputPasswordErrors is not empty %}
+                                    <p id="inputError" class="text-danger my-2">{{ inputPasswordErrors }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    {# copy this for card next to this one #}
+                    <div class="col-md-6">
+                        <div class="card mb-4 mb-md-0">
+                            <div class="card-body">
+                                <ul class="list-group list-group-flush rounded-3">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center p-3"><h5 class="card-title">My Latest Repairs</h5></li>
+                                {% if userRepairs is defined %}
+                                    {% if userRepairs is not null %}
+                                            {% for repair in userRepairs %}
+                                                <li class="list-group-item d-flex justify-content-between align-items-center p-3"><a href="#" class="card-link">{{ repair.assetid }}</a> {{ repair.createdAt|date('Y-m-d h:i') }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {# end copy #}
+                </div>
+            </div>
+        </div>
+    </selection>
 </div>
+<script>
+(function () {
+  'use strict'
+
+  // Fetch all the forms we want to apply custom Bootstrap validation styles to
+  var forms = document.querySelectorAll('.needs-validation')
+
+  // Loop over them and prevent submission
+  Array.prototype.slice.call(forms)
+    .forEach(function (form) {
+      form.addEventListener('submit', function (event) {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+
+        form.classList.add('was-validated')
+      }, false)
+    })
+})()
+
+if ($('#inputError').length) {
+    $('.collapse').addClass('show');
+}
+
+$('#form_theme').on('change', function(event) {
+    $('#changeThemeForm').submit();
+});
+</script>
 {% endblock %}
