@@ -92,7 +92,7 @@ class UserProfileController extends AbstractController
                 'choices' => $availableThemes,
                 'data' => $security->getUser()->getTheme()
             ])
-            ->add('submit'.mt_rand(), ButtonType::class, [
+            ->add('submit', ButtonType::class, [
                 'label' => 'Change',
                 'attr' => [
                     'id' => 'changeTheme',
